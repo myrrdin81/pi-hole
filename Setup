@@ -1,0 +1,76 @@
+# Requirements
+  raspberry Pi, VM or LCX
+  Debian/Ubuntu install
+  Internet
+  static IP of the Hostmachine
+
+# Setup
+  login as root 2 the machine via SSH
+# set static IP
+  root@xxx: ip a
+  # mark down the ethernet interface which has the Network IP Adress usually something like ethXX or ensXX
+  root@xxx: nano /etc/dhcpd.conf
+  # now edit the section for the Example static IP configuration to fit your needs
+  interface eth0
+  static ip_address=10.1.1.43/24 
+  static routers=10.1.1.1
+  static domain_name_servers=1.1.1.2
+  # now save and exit and lastly restart the machine
+# installing Pi-Hole
+  curl -sSL "https://install.pi-hole.net" > install-pi-hole
+  bash install-pi-hole
+  # follow the On-Screen Instructions
+  # once finished
+  pihole -a -p
+  nano /etc/pihole/pihole-FTL.conf
+  # paste the content of the pihole-FTL.conf 
+  # save and exit 
+  systemctl disable systemd-resolved
+  # now reboot the system once again
+  reboot
+# installing unbound
+  apt install unbound man
+  nano /etc/unbound/unbound.conf.d/server.conf
+  # paste the contents of the server.conf 
+  #save and exit
+  systemctl restart unbound
+  dig kuketz-blog.de @127.0.0.1 -p 5335 +short
+  dig sigfail.verteiltesysteme.net @127.0.0.1 -p 5335
+  dig sigok.verteiltesysteme.net @127.0.0.1 -p 5335
+  nano /etc/pihole/setupVars.conf
+  # set 
+    CACHE_SIZE to 0
+  # save and exit
+  nano /etc/dnsmasq.d/01-pihole.conf
+  # set 
+    cache-size to 0
+  # save and exit
+  nano /etc/dnsmasq.d/10-pihole-extra.conf
+  # set 
+    proxy-dnssec
+  # save and exit
+  # reboot the machine
+  reboot
+  # go to the webinterface of the pi-hole
+  http://xxx.xxx.xxx.xxx/admin
+  # goto Settings -> DNS
+  # uncheck all upstream DNS server
+  # on the righthand side check the first entry and enter the following
+  127.0.0.1#5335
+  # under Interface settings check
+  Permit all origins
+  # under advanced setting check the following
+  Never forward non-FQDN A and AAAA queries
+  Never forward reverse lookups for private IP ranges 
+  Use Conditional Forwarding
+  # fill out the Conditional Forwarding sections
+  # save and goto the Adlist
+  # now add the desired Addlist
+  https://firebog.net
+  # everything thats green is safe
+  # safe and go back to the ssh window
+  pihole -g
+  pihole -up 
+  # now one final reboot and everything should be up and running
+  reboot
+  # dont forget to change the dns server setting in the router...
